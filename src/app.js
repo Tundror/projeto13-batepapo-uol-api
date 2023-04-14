@@ -52,7 +52,7 @@ app.post("/participants", async (req, res) => {
     catch (err) { return res.status(500).send(err.message) }
 })
 
-app.get("/participants", (req, res) => {
+app.get("/participants", async (req, res) => {
     db.collection("participants").find().toArray()
         .then((users) => {
             if (users) {
