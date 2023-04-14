@@ -34,7 +34,7 @@ app.post("/participants", async (req, res) => {
     const newUser = { name, lastStatus: Date.now() }
     try {
         await db.collection("participants").insertOne(newUser)
-        res.status(201).send("Usuario adicionado")
+        
     }
     catch { return res.status(500).send("erro interno") }
 
@@ -47,7 +47,7 @@ app.post("/participants", async (req, res) => {
             time: dayjs().format('HH:mm:ss')
         }
         await db.collection("messages").insertOne(newMessage)
-        return res.sendStatus(201);
+        res.status(201).send("Usuario adicionado")
     }
     catch (err) { return res.status(500).send(err.message) }
 })
