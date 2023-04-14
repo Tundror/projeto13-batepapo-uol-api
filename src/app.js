@@ -33,7 +33,7 @@ app.post("/participants", async (req, res) => {
 
     const newUser = { name, lastStatus: Date.now() }
     try {
-        const inserirUser = await db.collection("participants").insertOne(newUser)
+        await db.collection("participants").insertOne(newUser)
         res.status(201).send("Usuario adicionado")
     }
     catch { return res.status(500).send("erro interno") }
@@ -65,7 +65,36 @@ app.get("/participants", async (req, res) => {
         .catch((err) => res.status(500).send(err.message))
 })
 
-app.post("/messages", (req, res) => {
+app.post("/messages", async (req, res) => {
+    const { to, text, type } = req.body
+    const { from } = req.headers
+
+    const schema = Joi.object({
+        to: Joi.string().min(1).required(),
+        text: Joi.string().min(1).required(),
+        type: Joi.string().valid('message', 'private_message').required(),
+    });
+
+    const usuarioExiste = await db.collection("participants").findOne({ name: from })
+    if (!usuarioExiste) return res.status(404).send("Usuario que enviou a mensagem nao existe")
+
+    const { error } = schema.validate(req.body)
+    if (error) {
+        return res.status(422).send(error.details[0].message);
+    }
+    const newMessage = {
+        from,
+        to,
+        text,
+        type,
+        time: dayjs().format('HH:mm:ss')
+    }
+    try {
+        await db.collection("messages").insertOne(newMessage)
+        return res.sendStatus(201);
+    }
+    catch (err) { return res.status(500).send(err.message) }
+
 
 })
 
