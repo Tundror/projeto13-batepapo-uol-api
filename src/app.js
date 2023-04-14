@@ -97,7 +97,7 @@ app.post("/messages", async (req, res) => {
 })
 
 app.get("/messages", async (req, res) => {
-    const User = req.headers.user || req.headers.User;
+    const {user} = req.headers
     const limit = parseInt(req.query.limit);
     if (limit && (isNaN(limit) || limit <= 0)) return res.sendStatus(422)
     try {
@@ -105,32 +105,32 @@ app.get("/messages", async (req, res) => {
             $or: [
                 { type: "message" },
                 { to: "Todos" },
-                { to: User },
-                { from: User }
+                { to: user },
+                { from: user }
             ]
         }).toArray()
         if (limit) res.status(200).send(mensagens.slice(-limit))
         else res.status(200).send(mensagens)
-        console.log(User)
+        console.log(user)
     }
     catch (err) { return res.status(500).send(err.message) }
 
 })
 
 app.post("/status", async (req, res) => {
-    const User = req.headers.user || req.headers.User;
+    const {user} = req.headers
     console.log(Date.now())
-    if (!User) return res.sendStatus(404)
+    if (!user) return res.sendStatus(404)
     try {
-        const participante = await db.collection("participants").findOne({ name: User })
+        const participante = await db.collection("participants").findOne({ name: user })
         if (!participante) return res.sendStatus(404)
     }
     catch (err) { return res.status(500).send(err.message) }
     try {
-        const userAtualizado = { name: User, lastStatus: Date.now() }
+        const userAtualizado = { name: user, lastStatus: Date.now() }
         await db
             .collection("participants")
-            .updateOne({ name: User }, { $set: userAtualizado });
+            .updateOne({ name: user }, { $set: userAtualizado });
 
         res.status(200).send("Usuario atualizado");
     } catch (err) { return res.status(500).send(err.message); }
