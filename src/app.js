@@ -97,7 +97,7 @@ app.post("/messages", async (req, res) => {
 })
 
 app.get("/messages", async (req, res) => {
-    const { User } = req.headers
+    const User = req.headers.user || req.headers.User;
     const limit = parseInt(req.query.limit);
     if (limit && (isNaN(limit) || limit <= 0)) return res.sendStatus(422)
     try {
@@ -111,14 +111,29 @@ app.get("/messages", async (req, res) => {
         }).toArray()
         if (limit) res.status(200).send(mensagens.slice(-limit))
         else res.status(200).send(mensagens)
-
+        console.log(User)
     }
     catch (err) { return res.status(500).send(err.message) }
 
 })
 
-app.post("/status", (req, res) => {
-    
+app.post("/status", async (req, res) => {
+    const User = req.headers.user || req.headers.User;
+    console.log(req.headers)
+    if (!User) return res.sendStatus(404)
+    try {
+        const participante = await db.collection("participants").findOne({ name: User })
+        if (!participante) return res.sendStatus(404)
+    }
+    catch (err) { return res.status(500).send(err.message) }
+    try {
+        const userAtualizado = { name: User, lastStatus: Date.now() }
+        await db
+            .collection("participants")
+            .updateOne({ name: User }, { $set: userAtualizado });
+
+        res.status(200).send("Usuario atualizado");
+    } catch (err) { return res.status(500).send(err.message); }
 })
 
 const port = 5000
