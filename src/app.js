@@ -94,16 +94,31 @@ app.post("/messages", async (req, res) => {
         return res.sendStatus(201);
     }
     catch (err) { return res.status(500).send(err.message) }
-
-
 })
 
-app.get("/messages", (req, res) => {
+app.get("/messages", async (req, res) => {
+    const { User } = req.headers
+    const limit = parseInt(req.query.limit);
+    if (limit && (isNaN(limit) || limit <= 0)) return res.sendStatus(422)
+    try {
+        const mensagens = await db.collection("messages").find({
+            $or: [
+                { type: "message" },
+                { to: "Todos" },
+                { to: User },
+                { from: User }
+            ]
+        }).toArray()
+        if (limit) res.status(200).send(mensagens.slice(-limit))
+        else res.status(200).send(mensagens)
+
+    }
+    catch (err) { return res.status(500).send(err.message) }
 
 })
 
 app.post("/status", (req, res) => {
-
+    
 })
 
 const port = 5000
