@@ -138,6 +138,7 @@ app.post("/status", async (req, res) => {
 
 setInterval(async () => {
     const tenSecondsAgo = Date.now() - 10000;
+    console.log("checando usuarios")
     const participants = await db.collection("participants")
         .find({ lastStatus: { $lt: tenSecondsAgo } }).toArray();
     if (participants.length > 0) {
@@ -152,6 +153,7 @@ setInterval(async () => {
                 time: dayjs().format('HH:mm:ss')
             };
             await db.collection("messages").insertOne(newMessage);
+            console.log(`Usuario ${name} removido`)
         }
     }
 }, 15000);
