@@ -102,8 +102,9 @@ app.get("/messages", async (req, res) => {
     const {user} = req.headers
     const limit = parseInt(req.query.limit);
     console.log(limit === 0)
-    if (limit && (isNaN(limit) || limit < 0 || limit === 0)) return res.sendStatus(422)
-    if (limit === 0) return res.sendStatus(422)
+    if (limit && limit < 0) return res.sendStatus(422)
+    else if (limit === 0) return res.sendStatus(422)
+    else if (isNaN(limit)) return res.sendStatus(422)
     try {
         const mensagens = await db.collection("messages").find({
             $or: [
