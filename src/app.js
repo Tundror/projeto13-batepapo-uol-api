@@ -118,7 +118,7 @@ app.get("/messages", async (req, res) => {
 })
 
 app.post("/status", async (req, res) => {
-    const user = req.headers.user
+    const user = req.headers.User
     console.log(req.headers)
     if (!user) return res.sendStatus(404)
     try {
