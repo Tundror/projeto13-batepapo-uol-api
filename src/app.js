@@ -67,7 +67,8 @@ app.get("/participants", async (req, res) => {
 
 app.post("/messages", async (req, res) => {
     const { to, text, type } = req.body
-    const { from } = req.headers
+    const { user } = req.headers
+    console.log(req.headers)
 
     const schema = Joi.object({
         to: Joi.string().min(1).required(),
@@ -75,7 +76,7 @@ app.post("/messages", async (req, res) => {
         type: Joi.string().valid('message', 'private_message').required(),
     });
 
-    const usuarioExiste = await db.collection("participants").findOne({ name: from })
+    const usuarioExiste = await db.collection("participants").findOne({ name: user })
     if (!usuarioExiste) return res.status(404).send("Usuario que enviou a mensagem nao existe")
 
     const { error } = schema.validate(req.body)
@@ -83,7 +84,7 @@ app.post("/messages", async (req, res) => {
         return res.status(422).send(error.details[0].message);
     }
     const newMessage = {
-        from,
+        from: user,
         to,
         text,
         type,
@@ -132,7 +133,7 @@ app.post("/status", async (req, res) => {
             .collection("participants")
             .updateOne({ name: user }, { $set: userAtualizado });
 
-        res.status(201).send("Usuario atualizado");
+        res.status(200).send("Usuario atualizado");
     } catch (err) { return res.status(500).send(err.message); }
 })
 
