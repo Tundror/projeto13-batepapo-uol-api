@@ -68,6 +68,7 @@ app.get("/participants", async (req, res) => {
 app.post("/messages", async (req, res) => {
     const { to, text, type } = req.body
     const { user } = req.headers
+    if(!user) return res.sendStatus(422)
     console.log(req.headers)
 
     const schema = Joi.object({
@@ -77,7 +78,7 @@ app.post("/messages", async (req, res) => {
     });
 
     const usuarioExiste = await db.collection("participants").findOne({ name: user })
-    if (!usuarioExiste) return res.status(404).send("Usuario que enviou a mensagem nao existe")
+    if (!usuarioExiste) return res.status(422).send("Usuario que enviou a mensagem nao existe")
 
     const { error } = schema.validate(req.body)
     if (error) {
@@ -100,7 +101,9 @@ app.post("/messages", async (req, res) => {
 app.get("/messages", async (req, res) => {
     const {user} = req.headers
     const limit = parseInt(req.query.limit);
-    if (limit && (isNaN(limit) || limit <= 0)) return res.sendStatus(422)
+    console.log(limit === 0)
+    if (limit && (isNaN(limit) || limit < 0 || limit === 0)) return res.sendStatus(422)
+    if (limit === 0) return res.sendStatus(422)
     try {
         const mensagens = await db.collection("messages").find({
             $or: [
